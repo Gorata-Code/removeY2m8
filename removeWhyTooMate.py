@@ -1,96 +1,108 @@
 import os
 
 
-def script_summary():
+def script_summary() -> None:
     print('''
-        This Program will help you remove "y2mate.com" from all your file names\n
-        in a flash. No need for installation. Just put this y2m8.exe file in the\n
-        same folder as all the files you want to rename and then double-click it to
-        run it.
+        \t\tDUMELANG means GREETINGS! ~ G-CODE\n
+        \t"REMOVE-Y2MATE" Version 1.1.0\n
+        This Program will help you remove variations of "y2mate" and aspect ratios (e.g.'1080p')\n
+        from all your file names in a heartbeat. No need for installation. Just put this "y2m8.exe"\n
+        file in the same folder as all the files you want to rename and then double-click it to run it.
     ''')
 
 
-def get_the_target_files():
-    try:
-        current_working_directory = os.listdir()
-
-        target_files = []
-
-        for file in current_working_directory:
-            if file.__contains__('y2mate.com - '):
-                target_files.append(file)
-
-        return target_files
-
-    except Exception as e:
-        print(str(e))
+VARIATIONS: list[str] = ['y2mate.com', 'y2mate.is', 'y2mate']
 
 
-def remove_y2_mate():
+def get_the_target_files() -> [str]:
+
+    current_working_directory = os.listdir()
+
+    target_files = []
+
+    for file in current_working_directory:
+        _, file_extn = os.path.splitext(file)
+        if file_extn != '.exe' and file_extn != '.py':
+            for word in VARIATIONS:
+                if word.casefold() in file.casefold():
+                    target_files.append(file)
+                    break
+    return target_files
+
+
+def remove_y2_mate() -> None:
+
     the_target_files = get_the_target_files()
 
     for file in the_target_files:
         try:
             file_name, file_ext = os.path.splitext(file)
-            new_name = file_name.replace('y2mate.com - ', '').title()
-            semi_final_name = new_name.replace('_', ' ')
-            final_name = semi_final_name + file_ext
+            new_name = ''
+
+            if file_name.casefold().split('-')[0].strip() == (VARIATIONS[0].casefold()):
+                new_name = (file_name.split('-')[1].split('_')[0].strip())
+            elif file_name.casefold().split('-')[0].strip() == (VARIATIONS[1].casefold()):
+                if len(file_name.split('-')) == 5:
+                    new_name = (file_name.split('-')[1].strip())
+                elif len(file_name.split('-')) > 5:
+                    new_name = (file_name.split('-')[1].strip() + ' -' + file_name.split('-')[-4])
+
+            final_name = new_name + file_ext
             os.rename(file, final_name)
-            print('SUCCESS: \n' + final_name + '\n')
 
-        except Exception as e:
-            if 'file already exists' in str(e):
-                print('FAILED: \n' + file)
-                print(f"If renamed, this file name will match an existing file name.\n")
+            print(f'SUCCESS:\n\tBEFORE: "{file}"\n\tAFTER:  "{final_name}"\n')
+
+        except WindowsError:
+            print(f'**FAIL**:\n\t"{file}"')
+            print(f"\tIf renamed, the file name above will match another file name in this folder.\n")
 
 
-def finalise():
+def finalise() -> None:
+
     the_targeted_files = get_the_target_files()
-    count = len(the_targeted_files)
+    the_eligible_files = len(the_targeted_files)
 
-    if count > 0:
+    if the_eligible_files > 0:
 
-        print('You will rename a total of: ' + str(count) + ' File(s).\n')
+        print('\t\t------------------------------------------------------------------')
+        print('        \t\t\tYOU WILL RENAME A TOTAL OF: ' + str(the_eligible_files) + ' FILE(S)')
+        print('\t\t------------------------------------------------------------------\n')
 
-        print('Type Yes to continue or No to cancel: \n')
-
-        go_or_no_go = input(' ').title()
+        go_or_no_go = input('Type Yes to continue or No to cancel: ').title()
 
         if go_or_no_go == 'Yes':
 
-            try:
-                print('\nFINAL NAMES\n')
+            print('\n\t\t\t\t--------> FINAL NAMES <--------\n')
 
-                remove_y2_mate()
-                files_renamed = (count - len(get_the_target_files()))
-                if files_renamed > 0:
-                    print(f'\n SUCCESSFUL! You have removed "y2mate.com" from {files_renamed} file names.')
-                    if len(get_the_target_files()) > 0:
-                        print(f'\n\tNOTE: {len(get_the_target_files())} Files with "y2mate.com" in their names were '
-                              f'not renamed because their names already exist in this folder.')
-                    input('\nPress Enter to Exit.\n')
+            remove_y2_mate()
+            files_renamed = (the_eligible_files - len(get_the_target_files()))
 
-                elif files_renamed == 0:
-                    print(f'\tFAILED! You have not removed "y2mate.com" from any file names.')
-                    input('\nPress Enter to Exit.\n')
+            if files_renamed > 0:
+                print(f'\n \t\t--------> SUCCESSFUL! You have removed "y2mate" from {files_renamed} File Name(s) '
+                      f'<--------')
+                if len(get_the_target_files()) > 0:
+                    print(f'\n\tNOTE: {len(get_the_target_files())} File(s) with "y2mate" in their name(s) was/were '
+                          f'not renamed\n\t\tbecause the name(s) already exist(s) in this folder.')
+                input('\nPress Enter to Exit.\n')
 
-            except Exception as e:
-                print(str(e))
-                input('\nPress Enter to Exit.')
+            elif files_renamed == 0:
+                print(f'\tFAILED! You have not removed "y2mate" from any file names.')
+                input('\nPress Enter to Exit.\n')
 
         else:
-            print('\nNo changes were made to your file names.\n')
+            print('\nCANCELLED!')
+            print('\tNo changes were made to your file names.\n')
             input('\nPress Enter to Exit.\n')
 
-    elif count == 0:
+    elif the_eligible_files == 0:
 
-        print('''\tNOTHING TO RENAME HERE\n\n\tThere are no files with "y2mate.com" in their names in this folder. 
-        Please make sure you are running this script from the folder containing\n\tthe files you want to rename.\n''')
+        print('''\tNOTHING TO RENAME HERE\n\n\tThere are no files with "y2mate" in their names in this folder. Please 
+        make sure you are running this script from the folder containing the\n\tfiles you want to rename.\n''')
 
         input('\nPress Enter to Exit.\n')
 
 
-def main():
+def main() -> None:
     script_summary()
     finalise()
 
